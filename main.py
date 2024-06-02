@@ -2,7 +2,7 @@ from fastapi import FastAPI, Body, Path, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 # control de validaciones importar Field
 from pydantic import BaseModel, Field	
-from typing import Optional
+from typing import Optional, List
 
 
 app = FastAPI()
@@ -60,15 +60,16 @@ def message():
     # Si utilizamos HTMLResponse
     return HTMLResponse ('<h1>hellooo </h1> ')
 
-@app.get('/movies', tags=['movies'])
-def get_movies():
+# Con typing puedo devolver una lista  response_model
+@app.get('/movies', tags=['movies'], response_model=List[Movie])
+def get_movies() -> List[Movie]:
 	#return movies
 	# Lo cambio por el Jsonresponse
 	return JSONResponse(content=movies)
 
 
-@app.get('/movies/{id}', tags=['movie id'])
-def get_movie(id: int = Path( ge=1, le=2000)):
+@app.get('/movies/{id}', tags=['movie id'], response_model=Movie )
+def get_movie(id: int = Path( ge=1, le=2000)) ->Movie:	
 	for item in movies:
 		if item['id'] == id:
 			# cambio por json
@@ -77,8 +78,8 @@ def get_movie(id: int = Path( ge=1, le=2000)):
 	return JSONResponse(content=[])
 
 # al no colocar el parametro el lo coloca como parametro query
-@app.get('/movies/', tags=['movie categoria'])
-def get_movie_by_categ(categoria: str = Query(min_length=5, max_length=15 ) ):
+@app.get('/movies/', tags=['movie categoria'], response_model=Movie)
+def get_movie_by_categ(categoria: str = Query(min_length=5, max_length=15 )) -> List[Movie]:
 	retorna = []
 	for item in movies:
 		if item['category'] == categoria:
@@ -86,10 +87,10 @@ def get_movie_by_categ(categoria: str = Query(min_length=5, max_length=15 ) ):
 	return retorna
 
 # Utilizar post
-@app.post('/movies/', tags=['movies post'])
+@app.post('/movies/', tags=['movies post create'], response_model=dict)
 # como cambiar por esquema por pydantic
 #def create_movie(id: int = Body(), title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
-def create_movie(movie: Movie):
+def create_movie(movie: Movie)->dict:
 
 # al utilizar el esquema con pydantic ya no va esto ->
 #	movies.append({
@@ -101,12 +102,12 @@ def create_movie(movie: Movie):
 #		"category": category
 #	})
 	movies.append(movie)
-	return JSONResponse(content=movies)
+	return JSONResponse(content={"message":"Se registro la pelicula"})
 # Utilizar put update
-@app.put('/movies/{id}', tags=['movies put'])
+@app.put('/movies/{id}', tags=['movies put update'], response_model=dict)
 # por pyndatic ya no ->
 #def update_movie(id: int, title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
-def update_movie(id: int, movie: Movie):
+def update_movie(id: int, movie: Movie)->dict:
 	for item in movies:
 		if item['id'] == id:
 			item['title'] = movie.title
@@ -114,12 +115,12 @@ def update_movie(id: int, movie: Movie):
 			item['year'] = movie.year
 			item['rating'] = movie.rating
 			item['category'] = movie.category
-			return JSONResponse(content=movies)
+			return JSONResponse(content={"message":"Se modifico la pelicula"})
 
 # Utilizar delete
-@app.delete('/movies/{id}', tags=['movies delete'])
-def delete_movie(id: int ):
+@app.delete('/movies/{id}', tags=['movies delete'], response_model=dict)
+def delete_movie(id: int )->dict:
 	for item in movies:
 		if item['id'] == id:
 			movies.remove(item)
-			return JSONResponse(content=movies)
+			return JSONResponse(content={"message":"Se elimino al pelicula"})
