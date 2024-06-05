@@ -61,11 +61,12 @@ def message():
     return HTMLResponse ('<h1>hellooo </h1> ')
 
 # Con typing puedo devolver una lista  response_model
-@app.get('/movies', tags=['movies'], response_model=List[Movie])
+# con status_code controlamos los errores
+@app.get('/movies', tags=['movies'], response_model=List[Movie], status_code=200)
 def get_movies() -> List[Movie]:
 	#return movies
 	# Lo cambio por el Jsonresponse
-	return JSONResponse(content=movies)
+	return JSONResponse(status_code=200, content=movies)
 
 
 @app.get('/movies/{id}', tags=['movie id'], response_model=Movie )
@@ -75,7 +76,7 @@ def get_movie(id: int = Path( ge=1, le=2000)) ->Movie:
 			# cambio por json
 			#return item
 			return JSONResponse(content=item)
-	return JSONResponse(content=[])
+	return JSONResponse(status_code=404, content=[])
 
 # al no colocar el parametro el lo coloca como parametro query
 @app.get('/movies/', tags=['movie categoria'], response_model=Movie)
@@ -87,7 +88,7 @@ def get_movie_by_categ(categoria: str = Query(min_length=5, max_length=15 )) -> 
 	return retorna
 
 # Utilizar post
-@app.post('/movies/', tags=['movies post create'], response_model=dict)
+@app.post('/movies/', tags=['movies post create'], response_model=dict, status_code=201)
 # como cambiar por esquema por pydantic
 #def create_movie(id: int = Body(), title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
 def create_movie(movie: Movie)->dict:
@@ -102,9 +103,9 @@ def create_movie(movie: Movie)->dict:
 #		"category": category
 #	})
 	movies.append(movie)
-	return JSONResponse(content={"message":"Se registro la pelicula"})
+	return JSONResponse(status_code=201, content={"message":"Se registro la pelicula"})
 # Utilizar put update
-@app.put('/movies/{id}', tags=['movies put update'], response_model=dict)
+@app.put('/movies/{id}', tags=['movies put update'], response_model=dict, status_code=200)
 # por pyndatic ya no ->
 #def update_movie(id: int, title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
 def update_movie(id: int, movie: Movie)->dict:
@@ -115,12 +116,12 @@ def update_movie(id: int, movie: Movie)->dict:
 			item['year'] = movie.year
 			item['rating'] = movie.rating
 			item['category'] = movie.category
-			return JSONResponse(content={"message":"Se modifico la pelicula"})
+			return JSONResponse(status_code=200, content={"message":"Se modifico la pelicula"})
 
 # Utilizar delete
-@app.delete('/movies/{id}', tags=['movies delete'], response_model=dict)
+@app.delete('/movies/{id}', tags=['movies delete'], response_model=dict, status_code=200)
 def delete_movie(id: int )->dict:
 	for item in movies:
 		if item['id'] == id:
 			movies.remove(item)
-			return JSONResponse(content={"message":"Se elimino al pelicula"})
+			return JSONResponse(status_code=200, content={"message":"Se elimino al pelicula"})
