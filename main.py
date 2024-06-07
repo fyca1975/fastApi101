@@ -3,12 +3,20 @@ from fastapi.responses import HTMLResponse, JSONResponse
 # control de validaciones importar Field
 from pydantic import BaseModel, Field	
 from typing import Optional, List
+from jwt_manager import create_token
 
 
 app = FastAPI()
 # para la documentacion de fastAPI, cambiar titulo y version
 app.title = 'Aprendiendo fastapi'
 app.version = '0.0.1'
+
+class User(BaseModel):
+	email:str
+	password:str
+
+
+
 
 class Movie(BaseModel):
 	#id: int | None = None 
@@ -59,6 +67,11 @@ def message():
     # return {'Hello': 'world'}
     # Si utilizamos HTMLResponse
     return HTMLResponse ('<h1>hellooo </h1> ')
+
+# Ruta para recivir usuario 
+@app.post('/login', tags=['autenticar'])
+def login(user: User):
+	return user
 
 # Con typing puedo devolver una lista  response_model
 # con status_code controlamos los errores
