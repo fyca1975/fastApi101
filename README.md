@@ -3,7 +3,7 @@ Aprendiendo FastApi platzi
 
 ## Codigo
 
-git clone 
+git clone
 py -m venv env 
 source env/bin/activate 
 pip install -r requirements.txt 
