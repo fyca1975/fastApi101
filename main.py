@@ -68,10 +68,19 @@ def message():
     # Si utilizamos HTMLResponse
     return HTMLResponse ('<h1>hellooo </h1> ')
 
-# Ruta para recivir usuario 
-@app.post('/login', tags=['autenticar'])
+# Ruta para recibir usuario 
+#@app.post('/login', tags=['autenticar'])
+#def login(user: User):
+#    if user.email == "admin" and user.password == "admin":
+#        token: str = create_token(user.__dict__())
+#        return JSONResponse(status_code=200, content=token)
+@app.post('/login', tags=['auth'])
 def login(user: User):
-	return user
+    if user.email == "admin@gmail.com" and user.password == "admin":
+        token: str = create_token(user.dict())
+        return JSONResponse(status_code=200, content=token)
+
+	
 
 # Con typing puedo devolver una lista  response_model
 # con status_code controlamos los errores
