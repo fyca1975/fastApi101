@@ -1,15 +1,26 @@
-from fastapi import FastAPI, Body, Path, Query
+from fastapi import Depends, FastAPI, Body, HTTPException, Path, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 # control de validaciones importar Field
 from pydantic import BaseModel, Field	
 from typing import Optional, List
-from jwt_manager import create_token
+from jwt_manager import create_token, validate_token
+from fastapi.security import HTTPBearer
+
 
 
 app = FastAPI()
 # para la documentacion de fastAPI, cambiar titulo y version
 app.title = 'Aprendiendo fastapi'
 app.version = '0.0.1'
+
+class JWTBearer(HTTPBearer):
+	async def __call__(self, request: Request):
+		auth = await super().__call__(request)
+		data = validate_token(auth.credentials)
+		if data['email'] != "admin@gmail.com":
+			raise HTTPException(status_code=403, detail="Credenciales invalidas")  
+
+	
 
 class User(BaseModel):
 	email:str
@@ -84,7 +95,7 @@ def login(user: User):
 
 # Con typing puedo devolver una lista  response_model
 # con status_code controlamos los errores
-@app.get('/movies', tags=['movies'], response_model=List[Movie], status_code=200)
+@app.get('/movies', tags=['movies'], response_model=List[Movie], status_code=200, dependencies=[Depends(JWTBearer())])
 def get_movies() -> List[Movie]:
 	#return movies
 	# Lo cambio por el Jsonresponse

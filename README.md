@@ -3,8 +3,6 @@ Aprendiendo FastApi platzi
 
 ## Code
 ```sh
-git clone 
-=======
 git clone
 py -m venv env 
 source env/bin/activate 
