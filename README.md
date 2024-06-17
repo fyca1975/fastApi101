@@ -16,7 +16,8 @@ http://localhost:5000/docs
 
 ## Conexion BD
 ```sh
-Utilizamos sqlite viewer para manejar BD , orientado a objetos
+#Utilizamos sqlite viewer extension para visual stidio code 
+#libreria sqlalchemy de python para manejar las tablas
 /config
-
+/models
 ``` 

@@ -5,6 +5,9 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from jwt_manager import create_token, validate_token
 from fastapi.security import HTTPBearer
+# par el manejo de tablas con las carpetas de config y models
+from config.database import Session, engine, Base
+from models.movie import Movie
 
 
 
@@ -12,6 +15,11 @@ app = FastAPI()
 # para la documentacion de fastAPI, cambiar titulo y version
 app.title = 'Aprendiendo fastapi'
 app.version = '0.0.1'
+
+# para la bse de datos
+Base.metadata.create_all(bind=engine)
+
+
 
 class JWTBearer(HTTPBearer):
 	async def __call__(self, request: Request):
