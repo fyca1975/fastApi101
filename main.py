@@ -7,7 +7,8 @@ from jwt_manager import create_token, validate_token
 from fastapi.security import HTTPBearer
 # par el manejo de tablas con las carpetas de config y models
 from config.database import Session, engine, Base
-from models.movie import Movie
+from models.movie import Movie as MovieModel
+from fastapi.encoders import jsonable_encoder
 
 
 
@@ -85,7 +86,7 @@ movies = [
 def message():
     # return {'Hello': 'world'}
     # Si utilizamos HTMLResponse
-    return HTMLResponse ('<h1>hellooo </h1> ')
+    return HTMLResponse ('<h1>Sitio arriba </h1> ')
 
 # Ruta para recibir usuario 
 #@app.post('/login', tags=['autenticar'])
@@ -107,17 +108,23 @@ def login(user: User):
 def get_movies() -> List[Movie]:
 	#return movies
 	# Lo cambio por el Jsonresponse
-	return JSONResponse(status_code=200, content=movies)
+	db = Session()
+	result = db.query(MovieModel).all()
+	return JSONResponse(status_code=200, content=jsonable_encoder(result))
 
 
 @app.get('/movies/{id}', tags=['movie id'], response_model=Movie )
 def get_movie(id: int = Path( ge=1, le=2000)) ->Movie:	
-	for item in movies:
-		if item['id'] == id:
-			# cambio por json
-			#return item
-			return JSONResponse(content=item)
-	return JSONResponse(status_code=404, content=[])
+	db =Session()
+	result =db.query(MovieModel).filter(MovieModel == id).first
+	if not result:
+		JSONResponse(status_code=404, content={'Mensaje':'No encontrado'})
+	# for item in movies:
+	# 	if item['id'] == id:
+	# 		# cambio por json
+	# 		#return item
+	# 		return JSONResponse(content=item)
+	return JSONResponse(status_code=200, content=jsonable_encoder(result))
 
 # al no colocar el parametro el lo coloca como parametro query
 @app.get('/movies/', tags=['movie categoria'], response_model=Movie)
@@ -130,21 +137,29 @@ def get_movie_by_categ(categoria: str = Query(min_length=5, max_length=15 )) -> 
 
 # Utilizar post
 @app.post('/movies/', tags=['movies post create'], response_model=dict, status_code=201)
-# como cambiar por esquema por pydantic
-#def create_movie(id: int = Body(), title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
-def create_movie(movie: Movie)->dict:
+def create_movie(movie: Movie) -> dict:
+    db = Session()
+    new_movie = MovieModel(**movie.dict())
+    db.add(new_movie)
+    db.commit()
+    return JSONResponse(status_code=201, content={"message": "Se ha registrado la película"})
 
-# al utilizar el esquema con pydantic ya no va esto ->
-#	movies.append({
-#		"id": id,
-#		"title": title,
-#		"overview":overview,
-#		"year": year,
-#		"rating": rating,
-#		"category": category
-#	})
-	movies.append(movie)
-	return JSONResponse(status_code=201, content={"message":"Se registro la pelicula"})
+# # como cambiar por esquema por pydantic
+# #def create_movie(id: int = Body(), title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
+# def create_movie(movie: Movie)->dict:
+# # al utilizar el esquema con pydantic ya no va esto ->
+# #	movies.append({
+# #		"id": id,
+# #		"title": title,
+# #		"overview":overview,
+# #		"year": year,
+# #		"rating": rating,
+# #		"category": category
+# #	})
+# 	movies.append(movie)
+# 	return JSONResponse(status_code=201, content={"message":"Se registro la pelicula"})
+
+
 # Utilizar put update
 @app.put('/movies/{id}', tags=['movies put update'], response_model=dict, status_code=200)
 # por pyndatic ya no ->
