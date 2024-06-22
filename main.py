@@ -35,18 +35,36 @@ class User(BaseModel):
 	email:str
 	password:str
 
-
-
-
 class Movie(BaseModel):
-	#id: int | None = None 
-	#con typing se puede remplzar por ->
-	id: Optional[int] = None
-	title: str = Field(default='pelicula', min_length=5, max_length=15)
-	overview: str = Field(default='Descripcion de la pelicula', min_length=15, max_length=51)
-	year: int = Field(default=2001, le=2024)
-	rating: float = Field(ge=1, le=10)  # abreviatura ge =  mayor igual, le =menor igual
-	category: str =Field(min_length=5, max_length=20)
+    id: Optional[int] = None
+    tittle: str = Field(min_length=5, max_length=15)
+    overview: str = Field(min_length=15, max_length=50)
+    year: int = Field(le=2022)
+    rating:float = Field(ge=1, le=10)
+    category:str = Field(min_length=5, max_length=15)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "title": "Mi película",
+                "overview": "Descripción de la película",
+                "year": 2022,
+                "rating": 9.8,
+                "category" : "Acción"
+            }
+        }
+
+
+# class Movie(BaseModel):
+# 	#id: int | None = None 
+# 	#con typing se puede remplzar por ->
+# 	id: Optional[int] = None
+# 	title: str = Field(default='pelicula', min_length=5, max_length=15)
+# 	overview: str = Field(default='Descripcion de la pelicula', min_length=15, max_length=51)
+# 	year: int = Field(default=2001, le=2024)
+# 	rating: float = Field(ge=1, le=10)  # abreviatura ge =  mayor igual, le =menor igual
+# 	category: str =Field(min_length=5, max_length=20)
 
 	# class Config:
     #     schema_extra = {
@@ -97,7 +115,7 @@ def message():
 @app.post('/login', tags=['auth'])
 def login(user: User):
     if user.email == "admin@gmail.com" and user.password == "admin":
-        token: str = create_token(user.dict())
+        token: str = create_token(user.model_dump())  #create_token(user.dict()) 
         return JSONResponse(status_code=200, content=token)
 
 	
@@ -118,13 +136,14 @@ def get_movie(id: int = Path( ge=1, le=2000)) ->Movie:
 	db =Session()
 	result =db.query(MovieModel).filter(MovieModel == id).first
 	if not result:
-		JSONResponse(status_code=404, content={'Mensaje':'No encontrado'})
+		return JSONResponse(status_code=404, content={'Mensaje':'No encontrado'})
+	return JSONResponse(status_code=200, content=jsonable_encoder(result))
 	# for item in movies:
 	# 	if item['id'] == id:
 	# 		# cambio por json
 	# 		#return item
 	# 		return JSONResponse(content=item)
-	return JSONResponse(status_code=200, content=jsonable_encoder(result))
+
 
 # al no colocar el parametro el lo coloca como parametro query
 @app.get('/movies/', tags=['movie categoria'], response_model=Movie)
@@ -139,10 +158,12 @@ def get_movie_by_categ(categoria: str = Query(min_length=5, max_length=15 )) -> 
 @app.post('/movies/', tags=['movies post create'], response_model=dict, status_code=201)
 def create_movie(movie: Movie) -> dict:
     db = Session()
-    new_movie = MovieModel(**movie.dict())
+    new_movie = MovieModel(**movie.model_dump())
     db.add(new_movie)
     db.commit()
     return JSONResponse(status_code=201, content={"message": "Se ha registrado la película"})
+
+
 
 # # como cambiar por esquema por pydantic
 # #def create_movie(id: int = Body(), title: str= Body(), overview: str= Body(), year: int= Body(), rating: float= Body() , category: str= Body() ):
